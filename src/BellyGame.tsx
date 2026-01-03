@@ -12,11 +12,11 @@ const BellyGame = () => {
     const warningRef = useRef<NodeJS.Timeout | null>(null);
 
     const CAT_IMAGES = {
-        IDLE: '/images/cat_idle.png',
-        SCRATCHING: '/images/cat_scratching.png',
-        WARNING: '/images/cat_warning.png',
-        ATTACK: '/images/cat_attack.png',
-        GAMEOVER: '/images/cat_scratching.png',
+        IDLE: 'images/cat_idle.png',
+        SCRATCHING: 'images/cat_scratching.png',
+        WARNING: 'images/cat_warning.png',
+        ATTACK: 'images/cat_attack.png',
+        GAMEOVER: 'images/cat_scratching.png',
     };
 
     const [isShaking, setIsShaking] = useState(false);
