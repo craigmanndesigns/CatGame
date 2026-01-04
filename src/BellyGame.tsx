@@ -125,10 +125,9 @@ const BellyGame = () => {
                     <img
                         src={CAT_IMAGES[gameState]}
                         alt="Cat"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover pointer-events-none"
                     />
                 </motion.div>
-
                 {gameState === 'GAMEOVER' && (
                     <button
                         onClick={() => { setScore(0); setGameState('IDLE'); }}
