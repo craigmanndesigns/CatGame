@@ -4,166 +4,164 @@ import { motion } from "framer-motion";
 type GameState = "IDLE" | "SCRATCHING" | "WARNING" | "ATTACK" | "GAMEOVER";
 
 const BellyGame = () => {
-  const [gameState, setGameState] = useState<GameState>("IDLE");
-  const [score, setScore] = useState(0);
-  const [sessionScore, setSessionScore] = useState(0); // Score for the current "hold"
+    const [gameState, setGameState] = useState<GameState>("IDLE");
+    const [score, setScore] = useState(0);
+    const [sessionScore, setSessionScore] = useState(0); // Score for the current "hold"
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const warningRef = useRef<NodeJS.Timeout | null>(null);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const warningRef = useRef<NodeJS.Timeout | null>(null);
 
-  const CAT_IMAGES = {
-    IDLE: "images/cat_idle.png",
-    SCRATCHING: "images/cat_scratching.png",
-    WARNING: "images/cat_warning.png",
-    ATTACK: "images/cat_attack.png",
-    GAMEOVER: "images/cat_scratching.png",
-  };
+    const CAT_IMAGES = {
+        IDLE: "images/cat_idle.png",
+        SCRATCHING: "images/cat_scratching.png",
+        WARNING: "images/cat_warning.png",
+        ATTACK: "images/cat_attack.png",
+        GAMEOVER: "images/cat_scratching.png",
+    };
 
-  const [isShaking, setIsShaking] = useState(false);
+    const [isShaking, setIsShaking] = useState(false);
 
-  const triggerShake = () => {
-    setIsShaking(true);
-    // Stop shaking after 500ms
-    setTimeout(() => setIsShaking(false), 500);
-  };
+    const triggerShake = () => {
+        setIsShaking(true);
+        // Stop shaking after 500ms
+        setTimeout(() => setIsShaking(false), 500);
+    };
 
-  const startScratching = () => {
-    if (gameState === "GAMEOVER" || gameState === "ATTACK") return;
+    const startScratching = () => {
+        if (gameState === "GAMEOVER" || gameState === "ATTACK") return;
 
-    setGameState("SCRATCHING");
-    setSessionScore(0); // Reset the points for this specific rub
+        setGameState("SCRATCHING");
+        setSessionScore(0); // Reset the points for this specific rub
 
-    const totalWait = Math.random() * 3000 + 1000;
-    const warningTime = totalWait - 700;
+        const totalWait = Math.random() * 3000 + 1000;
+        const warningTime = totalWait - 700;
 
-    warningRef.current = setTimeout(() => setGameState("WARNING"), warningTime);
-    timerRef.current = setTimeout(() => {
-      setGameState("ATTACK");
-      triggerShake();
-    }, totalWait);
-  };
+        warningRef.current = setTimeout(() => setGameState("WARNING"), warningTime);
+        timerRef.current = setTimeout(() => {
+            setGameState("ATTACK");
+            triggerShake();
+        }, totalWait);
+    };
 
-  const stopScratching = () => {
-    if (gameState === "SCRATCHING" || gameState === "WARNING") {
-      const isRiskTaker = gameState === "WARNING";
-      const finalGain = isRiskTaker ? sessionScore * 2 : sessionScore;
+    const stopScratching = () => {
+        if (gameState === "SCRATCHING" || gameState === "WARNING") {
+            const isRiskTaker = gameState === "WARNING";
+            const finalGain = isRiskTaker ? sessionScore * 2 : sessionScore;
 
-      setScore((prev) => prev + Math.floor(finalGain));
+            setScore((prev) => prev + Math.floor(finalGain));
 
-      // Clear timers
-      if (timerRef.current) clearTimeout(timerRef.current);
-      if (warningRef.current) clearTimeout(warningRef.current);
+            // Clear timers
+            if (timerRef.current) clearTimeout(timerRef.current);
+            if (warningRef.current) clearTimeout(warningRef.current);
 
-      setGameState("IDLE");
-    } else if (gameState === "ATTACK") {
-      setGameState("GAMEOVER");
-    }
-  };
+            setGameState("IDLE");
+        } else if (gameState === "ATTACK") {
+            setGameState("GAMEOVER");
+        }
+    };
 
-  // Continuous Scoring Logic
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (gameState === "SCRATCHING" || gameState === "WARNING") {
-      interval = setInterval(() => {
-        setSessionScore((s) => s + 1);
-      }, 50); // Adds points every 50ms
-    }
-    return () => clearInterval(interval);
-  }, [gameState]);
+    // Continuous Scoring Logic
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (gameState === "SCRATCHING" || gameState === "WARNING") {
+            interval = setInterval(() => {
+                setSessionScore((s) => s + 1);
+            }, 50); // Adds points every 50ms
+        }
+        return () => clearInterval(interval);
+    }, [gameState]);
 
-  useEffect(() => {
-    Object.values(CAT_IMAGES).forEach((src) => {
-      const img = new Image();
-      img.src = src;
-    });
-  }, []);
+    useEffect(() => {
+        Object.values(CAT_IMAGES).forEach((src) => {
+            const img = new Image();
+            img.src = src;
+        });
+    }, []);
 
-  return (
-    <div
-      className={`overflow-hidden flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white select-none transition-all
-          ${gameState === "WARNING" && "bg-orange-500"}
-          ${gameState === "ATTACK" && "bg-red-600"}
+    return (
+        <div
+            className={`overflow-hidden flex flex-col items-center justify-center min-h-screen bg-main text-white select-none transition-all
+          ${gameState === "WARNING" && "bg-warning"}
+          ${gameState === "ATTACK" && "bg-danger"}
           ${gameState === "GAMEOVER" && "bg-black"}
         `}
-    >
-      <motion.div
-        className="w-full h-screen flex flex-col items-center justify-center "
-        animate={
-          isShaking
-            ? {
-                x: [0, -10, 10, -10, 10, 0],
-                y: [0, 5, -5, 5, -5, 0],
-              }
-            : { x: 0, y: 0 }
-        }
-        transition={{ duration: 0.4 }}
-      >
-        <div className="w-full h-[30vh] flex flex-col justify-center items-center p-8 text-center z-10">
-          <h1 className="text-4xl font-black italic text-yellow-400">
-            Scratch the cat belly!
-          </h1>
+        >
+            <motion.div
+                className="w-full h-screen flex flex-col items-center justify-center "
+                animate={
+                    isShaking
+                        ? {
+                            x: [0, -10, 10, -10, 10, 0],
+                            y: [0, 5, -5, 5, -5, 0],
+                        }
+                        : { x: 0, y: 0 }
+                }
+                transition={{ duration: 0.4 }}
+            >
+                <div className="w-full h-[20vh] flex flex-col justify-center items-center p-8 text-center z-10 text-body">
+                    <h1 className="text-4xl font-black italic text-accent">
+                        Scratch the cat belly!
+                    </h1>
 
-          <div className="text-sm">
-            Click and hold on the cute belly <br /> don't get attacked, pre
-            attack 2x multiplier!
-          </div>
-          <div className="text-xl font-mono text-slate-400">TOTAL: {score}</div>
+                    <div className="text-sm">
+                        Don't get attacked, pre-attack 2x multiplier!
+                    </div>
+                    <div className="text-xl font-mono">TOTAL: {score}</div>
 
-          {/* Current Hold Display */}
-          <div className="h-8 mt-2">
-            {(gameState === "SCRATCHING" || gameState === "WARNING") && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className={`text-2xl font-bold ${
-                  gameState === "WARNING" ? "text-orange-500" : "text-green-400"
-                }`}
-              >
-                +{sessionScore} {gameState === "WARNING" && "(2X MULTIPLIER!)"}
-              </motion.div>
-            )}
-          </div>
-        </div>
-        <div className="w-full h-[70vh] flex justify-center items-center">
-          <motion.div
-            className={`w-50 h-50 flex items-center justify-center cursor-grab transition-all
+                    {/* Current Hold Display */}
+                    <div className="min-h-[2rem]">
+                        {(gameState === "SCRATCHING" || gameState === "WARNING") && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className={`text-2xl font-bold ${gameState === "WARNING" ? "text-body" : "text-success"
+                                    }`}
+                            >
+                                +{sessionScore} {gameState === "WARNING" && "(2X MULTIPLIER!)"}
+                            </motion.div>
+                        )}
+                    </div>
+                </div>
+                <div className="w-full h-[70vh] flex justify-center">
+                    <motion.div
+                        className={`w-50 h-50 mt-[40%] flex items-center justify-center cursor-grab transition-all
                         ${gameState === "WARNING" && "scale-110"}
                         ${gameState === "SCRATCHING" && "cursor-grabbing"}
-                        bg-pink-200 rounded-full z-2 opacity-10
+                        bg-pink-200 rounded-full z-2 opacity-0
                         `}
-            onMouseDown={startScratching}
-            onMouseUp={stopScratching}
-            onTouchStart={startScratching}
-            onTouchEnd={stopScratching}
-            animate={
-              gameState === "SCRATCHING" || gameState === "WARNING"
-                ? { rotate: [0, -2, 2, 0] }
-                : {}
-            }
-            transition={{ repeat: Infinity, duration: 0.1 }}
-          ></motion.div>
-          <div className="w-full h-full overflow-hidden absolute z-1 ">
-            <img
-              src={CAT_IMAGES[gameState]}
-              alt="Cat"
-              className="absolute w-[200%] xl:w-1/2 h-auto max-w-none pointer-events-none -right-[33%] xl:right-[28%]"
-            />
-          </div>
+                        onMouseDown={startScratching}
+                        onMouseUp={stopScratching}
+                        onTouchStart={startScratching}
+                        onTouchEnd={stopScratching}
+                        animate={
+                            gameState === "SCRATCHING" || gameState === "WARNING"
+                                ? { rotate: [0, -2, 2, 0] }
+                                : {}
+                        }
+                        transition={{ repeat: Infinity, duration: 0.1 }}
+                    ></motion.div>
+                    <div className="w-full overflow-hidden absolute z-1 h-fit flex justify-center items-center">
+                        <img
+                            src={CAT_IMAGES[gameState]}
+                            alt="Cat"
+                            className="relative w-full xl:w-1/2 h-auto max-w-none pointer-events-none"
+                        />
+                    </div>
+                </div>
+                {gameState === "GAMEOVER" && (
+                    <button
+                        onClick={() => {
+                            setScore(0);
+                            setGameState("IDLE");
+                        }}
+                        className="z-99 mt-8 bg-body text-white px-8 py-3 rounded-full font-bold hover:scale-105 active:scale-95 transition"
+                    >
+                        TRY AGAIN
+                    </button>
+                )}
+            </motion.div>
         </div>
-        {gameState === "GAMEOVER" && (
-          <button
-            onClick={() => {
-              setScore(0);
-              setGameState("IDLE");
-            }}
-            className="z-99 mt-8 bg-yellow-400 text-black px-8 py-3 rounded-full font-bold hover:scale-105 active:scale-95 transition"
-          >
-            TRY AGAIN
-          </button>
-        )}
-      </motion.div>
-    </div>
-  );
+    );
 };
 
 export default BellyGame;
